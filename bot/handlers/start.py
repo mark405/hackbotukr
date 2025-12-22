@@ -269,14 +269,14 @@ async def process_user_message(message: Message):
         await message.answer("❌ Error: Please enter numbers only." if lang == "en" else "❌ Ошибка: введите только цифры.")
         return
 
-    user_id = message.text.strip()
-    if not (
-        (len(user_id) == 9 and user_id.startswith("23")) or
-        (len(user_id) == 7 and user_id.startswith("4")) or
-        (len(user_id) == 9 and user_id.startswith("3"))
-    ):
-        await message.answer("❌ Error: Please enter a valid ID." if lang == "en" else "❌ Ошибка: введите корректный ID.")
-        return
+    # user_id = message.text.strip()
+    # if not (
+    #     (len(user_id) == 9 and user_id.startswith("23")) or
+    #     (len(user_id) == 7 and user_id.startswith("4")) or
+    #     (len(user_id) == 9 and user_id.startswith("3"))
+    # ):
+    #     await message.answer("❌ Error: Please enter a valid ID." if lang == "en" else "❌ Ошибка: введите корректный ID.")
+    #     return
 
     await message.answer("🔍 Checking ID in the database..." if lang == "en" else "🔍 Проверяю ID в базе...")
     await send_access_granted_message(bot, message, lang)
