@@ -11,34 +11,35 @@ import logging
 router = Router()
 awaiting_ids = {}
 
-
-
 # --- Клавиатуры ---
 
-lang_inline_keyboard = InlineKeyboardMarkup(
+start_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="Русский", callback_data="lang_ru")],
-        [InlineKeyboardButton(text="English", callback_data="lang_en")]
+        [InlineKeyboardButton(text="🚀 Розпочати", callback_data="start_flow")]
     ]
 )
 
-reg_inline_keyboard_ru = InlineKeyboardMarkup(
+how_it_works_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="🔗 ССЫЛКА ДЛЯ РЕГИСТРАЦИИ", callback_data="reg_link_ru")],
-        [InlineKeyboardButton(text="✅ ЗАРЕГИСТРИРОВАЛСЯ", callback_data="registered_ru")],
-        [InlineKeyboardButton(text="⬅️ Назад", callback_data="back_to_lang")]
+        [InlineKeyboardButton(text="🔥 Дізнатись, як це працює", callback_data="how_it_works")]
     ]
 )
 
-reg_inline_keyboard_en = InlineKeyboardMarkup(
+instruction_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="🔗 REGISTER LINK", callback_data="reg_link_en")],
-        [InlineKeyboardButton(text="✅ I HAVE REGISTERED", callback_data="registered_en")],
-        [InlineKeyboardButton(text="⬅️ Back", callback_data="back_to_lang")]
+        [InlineKeyboardButton(text="🚀 Отримати доступ до інструкції", callback_data="get_instruction")]
     ]
 )
 
-games_keyboard_ru = InlineKeyboardMarkup(
+reg_inline_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="🔗 ПОСИЛАННЯ ДЛЯ РЕЄСТРАЦІЇ", callback_data="reg_link")],
+        [InlineKeyboardButton(text="✅ Я ЗАРЕЄСТРУВАВСЯ", callback_data="registered")],
+        [InlineKeyboardButton(text="⬅️ Назад", callback_data="back_to_start")]
+    ]
+)
+
+games_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
         [
             InlineKeyboardButton(text="💎 MINES 💎", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/minesexplorer/")),
@@ -51,65 +52,41 @@ games_keyboard_ru = InlineKeyboardMarkup(
     ]
 )
 
-games_keyboard_en = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [
-            InlineKeyboardButton(text="💎 MINES 💎", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/minesexplorer-en/")),
-            InlineKeyboardButton(text="⚽ GOAL ⚽", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/goalrush-en/"))
-        ],
-        [
-            InlineKeyboardButton(text="✈️ AVIATRIX ✈️", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/aviatrixflymod-en/")),
-            InlineKeyboardButton(text="🥅 Penalty Shoot-out 🥅", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/penaltygame-en/"))
-        ],
-    ]
-)
-
-# Сообщение старта 
+# --- Сообщение старта ---
 
 async def send_start_text(bot: Bot, target, is_edit: bool = False):
     text = (
-        "Добро пожаловать в сигнальный бот CasinoHack🤖\n"
-        "Welcome to the CasinoHack signal bot🤖\n\n"
-        "Данный бот создан и обучен на кластере нейросети ChatGPT-v4.0🧠\n"
-        "This bot is created and trained on a ChatGPT-v4.0 neural cluster🧠\n\n"
-        "Продолжая, Вы соглашаетесь, что вся информация бесплатна и предоставлена исключительно в ознакомительных целях.\n"
-        "By continuing, you agree that all information is for educational purposes only.\n\n"
-        "Выберите язык / Choose a language 👇"
+        "👋 Привіт! Ти за крок до початку простого заробітку.\n\n"
+        "Тисни кнопку «Розпочати», щоб запустити систему 👇"
     )
     if is_edit:
-        await target.edit_text(text=text, reply_markup=lang_inline_keyboard)
+        await target.edit_text(text=text, reply_markup=start_keyboard)
     else:
-        await bot.send_message(chat_id=target, text=text, reply_markup=lang_inline_keyboard)
+        await bot.send_message(chat_id=target, text=text, reply_markup=start_keyboard)
+
 
 async def send_access_granted_message(bot: Bot, message: Message, user_lang: str):
-    keyboard = games_keyboard_en if user_lang == "en" else games_keyboard_ru
+    # user_lang оставляем как параметр, чтобы не ломать остальную логику
+    keyboard = games_keyboard
     text = (
-        "✅ ACCESS GRANTED ✅\n\n"
-        "🔴 Instructions:\n"
-        "1️⃣ Select a game below\n"
-        "2️⃣ Open it on the site\n"
-        "3️⃣ Get the signal and follow it in the game ➕ 🐝"
-    ) if user_lang == "en" else (
-        "✅ ДОСТУП ОТКРЫТ ✅\n\n"
-        "🔴 Инструкция:\n"
-        "1️⃣ Выберите игру ниже\n"
-        "2️⃣ Откройте её на сайте\n"
-        "3️⃣ Получите сигнал и повторите его в игре ➕ 🐝"
+        "✅ ДОСТУП ОТРИМАНО ✅\n\n"
+        "🔴 Інструкція:\n"
+        "1️⃣ Виберіть гру нижче\n"
+        "2️⃣ Відкрийте її на сайті\n"
+        "3️⃣ Отримайте сигнал і повторіть його в грі ➕ 🐝"
     )
     await message.answer(text, reply_markup=keyboard)
 
-# Обработчик /start 
+
+# --- Обработчик /start ---
 
 @router.message(CommandStart())
 async def start_handler(message: Message):
     try:
         await message.answer(
-            "Добро пожаловать в сигнальный бот CasinoHack🤖\n"
-            "Welcome to the CasinoHack signal bot🤖\n\n"
-            "Продолжая, Вы соглашаетесь, что вся информация бесплатна и предоставлена исключительно в ознакомительных целях.\n"
-            "By continuing, you agree that all information is for educational purposes only.\n\n"
-            "Выберите язык / Choose a language 👇",
-            reply_markup=lang_inline_keyboard
+            "👋 Привіт! Ти за крок до початку простого заробітку.\n\n"
+            "Тисни кнопку «Розпочати», щоб запустити систему 👇",
+            reply_markup=start_keyboard
         )
 
         parts = message.text.split(maxsplit=1)
@@ -158,11 +135,74 @@ async def start_handler(message: Message):
         await message.answer("Произошла ошибка при старте.")
 
 
-# Регистрация пользователя через кнопку 
-@router.callback_query(F.data.in_(["reg_link_ru", "reg_link_en"]))
+# --- Дальше по инструкции ---
+
+@router.callback_query(F.data == "back_to_start")
+async def back_to_start(callback: CallbackQuery):
+    await callback.answer()
+    await send_start_text(bot=callback.bot, target=callback.message, is_edit=True)
+
+@router.callback_query(F.data == "start_flow")
+async def start_flow(callback: CallbackQuery):
+    await callback.answer()
+    await callback.message.edit_text(
+        "👋 Вітаю!\n\n"
+        "Ти потрапив у бот, який використовують для отримання доходу на онлайн-іграх за допомогою автоматизованої аналітики.\n\n"
+        "Система створена так, щоб навіть новачок міг швидко розібратись і почати діяти без складнощів та досвіду.\n\n"
+        "💰 Користувачі, які чітко дотримуються інструкцій, заробляють 100–300$ вже з першого дня, працюючи з телефону та з дому.\n\n"
+        "❗️ Важливо:\n"
+        "❌ нічого зламувати не потрібно\n"
+        "❌ спеціальних знань не потрібно\n"
+        "❌ все вже налаштовано за тебе\n\n"
+        "Увесь процес розписаний покроково — 10–15 хвилин, і ти повністю розумієш, що робити далі.\n\n"
+        "👇 Тисни кнопку нижче:",
+        reply_markup=how_it_works_keyboard
+    )
+
+
+@router.callback_query(F.data == "how_it_works")
+async def how_it_works(callback: CallbackQuery):
+    await callback.answer()
+    await callback.message.edit_text(
+        "Основа системи — Telegram-бот з аналітичним модулем, який працює зі статистикою міні-ігор та повторюваними сценаріями.\n"
+        "⚙️ Що саме він робить: • 📊 Аналізує серії виграшів і програшів • 🔄 Визначає повторювані патерни • ✅ Показує оптимальну послідовність дій\n"
+        "🛡 Ти не ризикуєш навмання і не приймаєш рішення «на удачу».\n"
+        "Твоє завдання просте: повторювати готову схему, яку дає бот, вже на реальній платформі.\n"
+        "👇 Тисни кнопку нижче:",
+        reply_markup=instruction_keyboard
+    )
+
+
+@router.callback_query(F.data == "get_instruction")
+async def get_instruction(callback: CallbackQuery):
+    await callback.answer()
+
+    await callback.message.answer(
+        "1️⃣ Зареєструй акаунт на платформі, до якої підключений бот (посилання нижче).\n"
+        "2️⃣ Після реєстрації скопіюй ID свого акаунта.\n"
+        "3️⃣ Надішли ID сюди в бот.\n\n"
+        "💡 Для чого це потрібно? Це необхідно, щоб система синхронізувалася саме з твоїм профілем.\n"
+        "⚠️ Без ID бот не зможе активувати аналітику.\n"
+        "🎥 Нижче я додав коротку відео-інструкцію, щоб тобі було простіше."
+    )
+
+    # Вставка "псевдо відео" картинкою
+    await callback.message.answer_photo(
+        photo="https://via.placeholder.com/600x300.png?text=Video+Instruction"
+    )
+
+    await callback.message.answer(
+        "💸 Твій перший прибуток вже зовсім поруч! Всього один крок відділяє тебе від старту. "
+        "Реєструйся зараз, щоб заробити свої перші гроші вже сьогодні.",
+        reply_markup=reg_inline_keyboard
+    )
+
+
+# --- Регистрация пользователя через кнопку ---
+
+@router.callback_query(F.data == "reg_link")
 async def send_registration_link(callback: CallbackQuery):
     await callback.answer()
-    lang = "ru" if callback.data == "reg_link_ru" else "en"
 
     async with SessionLocal() as session:
         user_result = await session.execute(
@@ -179,129 +219,53 @@ async def send_registration_link(callback: CallbackQuery):
             if invite:
                 referral_link = invite.casino_link
 
-        text = (
-            f"Вот ссылка для регистрации: {referral_link}"
-            if lang == "ru"
-            else f"Here is the registration link: {referral_link}"
-        )
-        await callback.message.answer(text)
+        await callback.message.answer(f"Ось посилання для реєстрації: {referral_link}")
 
-#  Подтверждение регистрации 
 
-@router.callback_query(F.data == "registered_ru")
-async def registered_ru(callback: CallbackQuery):
+@router.callback_query(F.data == "registered")
+async def registered(callback: CallbackQuery):
     await callback.answer()
-    awaiting_ids[callback.from_user.id] = {"awaiting": True, "lang": "ru"}
-    await callback.message.answer("Введите ID нового аккаунта (только цифры)")
-
-@router.callback_query(F.data == "registered_en")
-async def registered_en(callback: CallbackQuery):
-    await callback.answer()
-    awaiting_ids[callback.from_user.id] = {"awaiting": True, "lang": "en"}
-    await callback.message.answer("Enter the ID of your new account (numbers only)")
+    awaiting_ids[callback.from_user.id] = True
+    await callback.message.answer("🔢 Введи ID свого нового акаунта (тільки цифри)")
 
 
-#  Выбор языка 
-
-@router.callback_query(F.data == "lang_ru")
-async def lang_ru_selected(callback: CallbackQuery):
-    await callback.answer()
-    async with SessionLocal() as session:
-        user_result = await session.execute(select(User).filter_by(telegram_id=callback.from_user.id))
-        user = user_result.scalar()
-
-        if user:
-            user.language = "ru"
-            await session.commit()
-
-    await callback.message.edit_text(
-        "Бот работает только с новыми аккаунтами, созданными по ссылке.\n\n"
-        "Чтобы получить доступ, зарегистрируйтесь по ссылке и отправьте ID нового аккаунта (только цифры).\n\n"
-        "Ссылка для регистрации 👇",
-        reply_markup=reg_inline_keyboard_ru
-    )
-
-@router.callback_query(F.data == "lang_en")
-async def lang_en_selected(callback: CallbackQuery):
-    await callback.answer()
-    async with SessionLocal() as session:
-        user_result = await session.execute(select(User).filter_by(telegram_id=callback.from_user.id))
-        user = user_result.scalar()
-
-        if user:
-            user.language = "en"
-            await session.commit()
-
-    await callback.message.edit_text(
-        "This bot works only with newly created accounts registered via the link below.\n\n"
-        "Please register a new account and send your ID (numbers only) to the bot.\n\n"
-        "Registration link 👇",
-        reply_markup=reg_inline_keyboard_en
-    )
-
-
-# Назад в выбор языка
-
-@router.callback_query(F.data == "back_to_lang")
-async def back_to_language(callback: CallbackQuery):
-    await callback.answer()
-    await send_start_text(bot=callback.bot, target=callback.message, is_edit=True)
-
-
-# Проверка ID пользователя
+# --- Проверка ID пользователя ---
 
 @router.message()
 async def process_user_message(message: Message):
     if message.text.startswith("/"):
-        # Обработка неизвестной команды
         print(f"❓ Необработанная команда: {message.text}")
         await message.answer("❗ Неизвестная команда.")
         return
 
-    user_data = awaiting_ids.get(message.from_user.id)
-    if not user_data or not user_data.get("awaiting"):
+    if message.from_user.id not in awaiting_ids:
         return
-
-    lang = user_data.get("lang", "ru")
-    bot = message.bot
 
     if not message.text.isdigit():
-        await message.answer("❌ Error: Please enter numbers only." if lang == "en" else "❌ Ошибка: введите только цифры.")
+        await message.answer("❌ Введи тільки цифри.")
         return
 
-    # user_id = message.text.strip()
-    # if not (
-    #     (len(user_id) == 9 and user_id.startswith("23")) or
-    #     (len(user_id) == 7 and user_id.startswith("4")) or
-    #     (len(user_id) == 9 and user_id.startswith("3"))
-    # ):
-    #     await message.answer("❌ Error: Please enter a valid ID." if lang == "en" else "❌ Ошибка: введите корректный ID.")
-    #     return
-
-    await message.answer("🔍 Checking ID in the database..." if lang == "en" else "🔍 Проверяю ID в базе...")
-    await send_access_granted_message(bot, message, lang)
+    await message.answer("🔍 Перевіряю ID в базі...")
+    await send_access_granted_message(message.bot, message, "uk")
     awaiting_ids.pop(message.from_user.id, None)
 
 
-
-#  Неизвестные колбэки 
+# --- Неизвестные колбэки ---
 
 @router.callback_query()
 async def catch_unhandled_callbacks(callback: CallbackQuery):
     known_callbacks = [
-        "registered_ru", "registered_en", "reg_link_ru", "reg_link_en",
-        "lang_ru", "lang_en", "back_to_lang",
+        "start_flow", "how_it_works", "get_instruction",
+        "registered", "reg_link",
         "admin_stats", "admin_add", "admin_remove", "user_list",
         "admin_list", "add_ref_link", "remove_ref_link", "referral_stats"
     ]
 
     if callback.data not in known_callbacks:
         await callback.answer()
-
         async with SessionLocal() as session:
             user_result = await session.execute(select(User).filter_by(telegram_id=callback.from_user.id))
             user = user_result.scalar()
 
-        lang = user.language if user else "ru"
-        text = "You clicked an unknown button!" if lang == "en" else "Вы нажали неизвестную кнопку!"
+        text = "Ви натиснули невідому кнопку!"
         await callback.message.answer(text)
