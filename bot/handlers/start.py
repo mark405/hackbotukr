@@ -188,7 +188,7 @@ async def get_instruction(callback: CallbackQuery):
 
     # Вставка "псевдо відео" картинкою
     await callback.message.answer_photo(
-        photo="https://via.placeholder.com/600x300.png?text=Video+Instruction"
+        photo="https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
     )
 
     await callback.message.answer(
@@ -226,7 +226,7 @@ async def send_registration_link(callback: CallbackQuery):
 async def registered(callback: CallbackQuery):
     await callback.answer()
     awaiting_ids[callback.from_user.id] = True
-    await callback.message.answer("🔢 Введи ID свого нового акаунта (тільки цифри)")
+    await callback.message.answer("🔢 Вкажи ID свого нового акаунта (тільки цифри)")
 
 
 # --- Проверка ID пользователя ---
@@ -234,8 +234,8 @@ async def registered(callback: CallbackQuery):
 @router.message()
 async def process_user_message(message: Message):
     if message.text.startswith("/"):
-        print(f"❓ Необработанная команда: {message.text}")
-        await message.answer("❗ Неизвестная команда.")
+        print(f"❓ Ненадіслана команда: {message.text}")
+        await message.answer("❗ Невідома команда.")
         return
 
     if message.from_user.id not in awaiting_ids:
@@ -245,7 +245,7 @@ async def process_user_message(message: Message):
         await message.answer("❌ Введи тільки цифри.")
         return
 
-    await message.answer("🔍 Перевіряю ID в базі...")
+    await message.answer("🔍 Перевіряю ID у базі...")
     await send_access_granted_message(message.bot, message, "uk")
     awaiting_ids.pop(message.from_user.id, None)
 
