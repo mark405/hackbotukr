@@ -185,9 +185,8 @@ async def get_instruction(callback: CallbackQuery):
         "🎥 Нижче я додав коротку відео-інструкцію, щоб тобі було простіше."
     )
 
-    video = FSInputFile("media/instruction.mp4")
-
-    await callback.message.answer_video(video=video)
+    video_file_id = "BAACAgIAAxkBAANGaX-OH0z4YMtRdeNHb7qtmpYFWlkAApCNAAK02AFIGUUF5mIrqGc4BA"
+    await callback.message.answer_video(video=video_file_id)
 
     await asyncio.sleep(15)
 
@@ -205,7 +204,6 @@ async def debug_media(message: Message):
         logging.info(f"DOCUMENT FILE_ID: {message.document.file_id}")
     else:
         logging.info(f"MESSAGE: {message.model_dump()}")
-
 
 
 # --- Регистрация пользователя через кнопку ---
@@ -243,7 +241,7 @@ async def registered(callback: CallbackQuery):
 
 @router.message()
 async def process_user_message(message: Message):
-    if message.text and message.text.startswith("/"):
+    if message.text.startswith("/"):
         print(f"❓ Ненадіслана команда: {message.text}")
         await message.answer("❗ Невідома команда.")
         return
