@@ -1,5 +1,7 @@
+import asyncio
+
 from aiogram import Bot, Router, F
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo, FSInputFile
 from aiogram.filters import CommandStart
 from sqlalchemy.future import select
 
@@ -157,15 +159,16 @@ async def back_to_start(callback: CallbackQuery):
 async def how_it_works(callback: CallbackQuery):
     await callback.answer()
     await callback.message.edit_text(
-        "Основа системи — Telegram-бот з аналітичним модулем, який працює зі статистикою міні-ігор та повторюваними сценаріями.\n"
+        "Основа системи — Telegram-бот з аналітичним модулем, який працює зі статистикою міні-ігор та повторюваними сценаріями.\n\n"
         "⚙️ Що саме він робить:\n"
         " • 📊 Аналізує серії виграшів і програшів\n"
         " • 🔄 Визначає повторювані патерни\n"
-        " • ✅ Показує оптимальну послідовність дій\n"
-        "🛡 Ти не ризикуєш навмання і не приймаєш рішення «на удачу».\n"
-        "Твоє завдання просте: повторювати готову схему, яку дає бот, вже на реальній платформі.\n"
+        " • ✅ Показує оптимальну послідовність дій\n\n"
+        "<b>🛡 Ти не ризикуєш навмання і не приймаєш рішення «на удачу».</b>\n\n"
+        "Твоє завдання просте: повторювати готову схему, яку дає\n бот, вже на реальній платформі.\n\n"
         "👇 Тисни кнопку нижче:",
-        reply_markup=instruction_keyboard
+        reply_markup=instruction_keyboard,
+        parse_mode="HTML"
     )
 
 
@@ -182,10 +185,11 @@ async def get_instruction(callback: CallbackQuery):
         "🎥 Нижче я додав коротку відео-інструкцію, щоб тобі було простіше."
     )
 
-    # Вставка "псевдо відео" картинкою
-    await callback.message.answer_photo(
-        photo="https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
-    )
+    video = FSInputFile("media/instruction.mp4")
+
+    await callback.message.answer_video(video=video)
+
+    await asyncio.sleep(15)
 
     await callback.message.answer(
         "💸 Твій перший прибуток вже зовсім поруч! Всього один крок відділяє тебе від старту. "
