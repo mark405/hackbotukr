@@ -10,7 +10,7 @@ async def save_step(session, telegram_id: int, step: str):
     progress = result.scalar_one_or_none()
 
     if progress:
-        return
+        progress.last_step = step
     else:
         progress = UserProgress(
             telegram_id=telegram_id,
