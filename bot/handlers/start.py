@@ -9,6 +9,7 @@ from sqlalchemy.future import select
 from bot.config import WEBAPP_BASE_URL, REGISTRATION_URL
 from bot.database.db import SessionLocal
 from bot.database.models import User, Referral, ReferralInvite
+from bot.database.save_step import save_step
 
 router = Router()
 awaiting_ids = {}
@@ -74,6 +75,9 @@ async def send_start_text(bot: Bot, target, is_edit: bool = False):
     else:
         await bot.send_message(chat_id=target, text=text, reply_markup=how_it_works_keyboard)
 
+    async with SessionLocal() as session:
+        await save_step(session, target.from_user.id, "start")
+
 
 async def send_access_granted_message(bot: Bot, message: Message, user_lang: str):
     # user_lang оставляем как параметр, чтобы не ломать остальную логику
@@ -87,6 +91,8 @@ async def send_access_granted_message(bot: Bot, message: Message, user_lang: str
     )
     await message.answer(text, reply_markup=keyboard)
 
+    async with SessionLocal() as session:
+        await save_step(session, message.from_user.id, "access_granted")
 
 # --- Обработчик /start ---
 
@@ -149,6 +155,9 @@ async def start_handler(message: Message):
                     logging.warning(
                         f"⚠️ Пользователь {message.from_user.id} пришёл с несуществующим bot_tag: {bot_tag}")
 
+        async with SessionLocal() as session:
+            await save_step(session, message.from_user.id, "start")
+
     except Exception as e:
         logging.error(f"❌ Ошибка в /start: {str(e)}")
         await message.answer("Произошла ошибка при старте.")
@@ -178,6 +187,8 @@ async def how_it_works(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
+    async with SessionLocal() as session:
+        await save_step(session, callback.from_user.id, "how_it_works")
 
 @router.callback_query(F.data == "get_instruction")
 async def get_instruction(callback: CallbackQuery):
@@ -202,6 +213,9 @@ async def get_instruction(callback: CallbackQuery):
         "Реєструйся зараз, щоб заробити свої перші гроші вже сьогодні.",
         reply_markup=reg_inline_keyboard
     )
+
+    async with SessionLocal() as session:
+        await save_step(session, callback.from_user.id, "instruction")
 
 
 # @router.message()
@@ -237,6 +251,9 @@ async def send_registration_link(callback: CallbackQuery):
         logging.info(f"Generated registration link for user {callback.from_user.id}: {referral_link}")
         await callback.message.answer(f"Ось посилання для реєстрації: {referral_link}")
 
+    async with SessionLocal() as session:
+        await save_step(session, callback.from_user.id, "reg_link")
+
 @router.callback_query(F.data == "help")
 async def help_callback(callback: CallbackQuery):
     await callback.answer()
@@ -270,6 +287,8 @@ async def process_user_message(message: Message):
     await send_access_granted_message(message.bot, message, "uk")
     awaiting_ids.pop(message.from_user.id, None)
 
+    async with SessionLocal() as session:
+        await save_step(session, message.from_user.id, "entered_id")
 
 # --- Неизвестные колбэки ---
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, BigInteger, String, ForeignKey, DateTime, Boolean, func
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -81,3 +81,13 @@ class ReferralInvite(Base):
 
     def __repr__(self):
         return f"<ReferralInvite(id={self.id}, tag={self.bot_tag}, casino={self.casino_link})>"
+
+class UserProgress(Base):
+    __tablename__ = "user_progress"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    telegram_id = Column(BigInteger, index=True, nullable=False)
+    last_step = Column(String(50), nullable=False)
+    bot_name = Column(String(50), nullable=False, default="hackbotukr")
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
