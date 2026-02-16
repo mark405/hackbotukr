@@ -88,6 +88,7 @@ class UserProgress(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     telegram_id = Column(BigInteger, index=True, nullable=False)
     last_step = Column(String(50), nullable=False)
-    bot_name = Column(String(50), nullable=False, default="hackbotukr")
+    bot_name = Column(String(50), nullable=False)
+    username = Column(String(50), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 

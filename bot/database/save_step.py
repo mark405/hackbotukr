@@ -3,7 +3,7 @@ from sqlalchemy import select
 from bot.database.models import UserProgress
 
 
-async def save_step(session, telegram_id: int, step: str):
+async def save_step(session, telegram_id: int, step: str, username: str):
     result = await session.execute(
         select(UserProgress).filter_by(telegram_id=telegram_id)
     )
@@ -15,7 +15,8 @@ async def save_step(session, telegram_id: int, step: str):
         progress = UserProgress(
             telegram_id=telegram_id,
             last_step=step,
-            bot_name="hackbotukr"
+            bot_name="hackbotukr",
+            username=username
         )
         session.add(progress)
 
