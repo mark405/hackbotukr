@@ -15,6 +15,7 @@ from bot.handlers.webmaster_invites import router as wm_invites_router
 from bot.handlers.webmaster_links import router as wm_links_router
 from bot.handlers.webmaster_manage import router as wm_manage_router
 from bot.handlers.start import router as start_router  # <-- в самый низ
+from bot.utils.push_scheduler import push_loop
 
 # Логирование
 logging.basicConfig(level=logging.INFO)
@@ -61,7 +62,15 @@ async def main():
     except Exception as e:
         logging.error(f"❌ Ошибка при подключении маршрутизаторов: {str(e)}")
 
-    await dp.start_polling(bot)
+    push_task = asyncio.create_task(push_loop(bot))
+    try:
+        await dp.start_polling(bot)
+    finally:
+        push_task.cancel()
+        try:
+            await push_task
+        except asyncio.CancelledError:
+            pass
 
 
 if __name__ == "__main__":

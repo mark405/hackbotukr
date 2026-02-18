@@ -8,13 +8,19 @@ from sqlalchemy.future import select
 
 from bot.config import WEBAPP_BASE_URL, REGISTRATION_URL
 from bot.database.db import SessionLocal
-from bot.database.models import User, Referral, ReferralInvite
+from bot.database.models import User, Referral, ReferralInvite, UserProgress
 from bot.database.save_step import save_step
 
 router = Router()
 awaiting_ids = {}
 
 # --- Клавиатуры ---
+
+continue_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="▶️ Продовжити", callback_data="continue_flow")]
+    ]
+)
 
 how_it_works_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
@@ -273,6 +279,38 @@ async def registered(callback: CallbackQuery):
     await callback.answer()
     awaiting_ids[callback.from_user.id] = True
     await callback.message.answer("🔢 Вкажи ID свого нового акаунта (тільки цифри)")
+
+@router.callback_query(F.data == "continue_flow")
+async def continue_flow(callback: CallbackQuery):
+    await callback.answer()
+
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(UserProgress).filter_by(telegram_id=callback.from_user.id, bot_name="hackbotukr")
+        )
+        progress = result.scalar()
+
+    if not progress:
+        await send_start_text(callback.bot, callback.message, is_edit=True)
+        return
+
+    step = progress.last_step
+
+    if step == "start":
+        await send_start_text(callback.bot, callback.message, is_edit=True)
+
+    elif step == "how_it_works":
+        await how_it_works(callback)
+
+    elif step == "instruction":
+        await get_instruction(callback)
+
+    elif step in ["entered_id", "access_granted"]:
+        await send_access_granted_message(callback.bot, callback.message, "uk")
+
+    else:
+        await send_start_text(callback.bot, callback.message, is_edit=True)
+
 
 
 # --- Проверка ID пользователя ---
