@@ -20,7 +20,7 @@ async def push_loop(bot: Bot):
             users = result.scalars().all()
 
         for user_id in users:
-            if user_id != 346457069: continue
+            # if user_id != 346457069: continue
             try:
                 text = random.choice(PUSH_MESSAGES)
                 await bot.send_message(user_id, text, reply_markup=continue_keyboard)
