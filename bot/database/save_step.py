@@ -5,7 +5,7 @@ from bot.database.models import UserProgress
 
 async def save_step(session, telegram_id: int, step: str, username: str):
     result = await session.execute(
-        select(UserProgress).filter_by(telegram_id=telegram_id)
+        select(UserProgress).filter_by(telegram_id=telegram_id, bot_name="hackbotukr")
     )
     progress = result.scalar_one_or_none()
 
