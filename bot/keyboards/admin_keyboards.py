@@ -9,6 +9,7 @@ admin_keyboard = InlineKeyboardMarkup(
         [InlineKeyboardButton(text="🚫 Удалить админа", callback_data="admin_remove")],
         [InlineKeyboardButton(text="📋 Список пользователей", callback_data="user_list")],
         [InlineKeyboardButton(text="👷 Вебмастера", callback_data="webmaster_menu")],  # новая кнопка
+        [InlineKeyboardButton(text="👷 Сгенерировать ключ", callback_data="generate_key")],  # новая кнопка
     ]
 )
 

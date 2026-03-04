@@ -1,20 +1,22 @@
+import logging
+import re
+import secrets
+import string
+
 from aiogram import types, Router, F
-from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from sqlalchemy import func
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from sqlalchemy import func
 
 from bot.admin_panel.admin_utils import (
     is_admin, remove_admin, list_admins, list_ref_links
 )
 from bot.database.db import SessionLocal
-from bot.database.models import User, Admin, Referral, ReferralLink
+from bot.database.models import User, Admin, Referral, AccessKey
 from bot.keyboards.admin_keyboards import admin_keyboard
-from bot.states.admin_states import AdminStates
-
-import logging
 
 router = Router()
 
@@ -181,6 +183,30 @@ async def show_admin_list(callback: CallbackQuery):
     await callback.message.answer("Выберите администратора для просмотра его вебмастеров:", reply_markup=kb)
     await callback.answer()
 
+def generate_random_key(length: int = 16) -> str:
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+@router.callback_query(F.data == "generate_key")
+async def generate_key(callback: CallbackQuery):
+    telegram_id = callback.from_user.id
+
+    # generate key
+    key = generate_random_key()
+
+    # save to DB
+    async with SessionLocal() as session:
+        session.add(AccessKey(key=key, entered=False))
+        await session.commit()
+
+    # answer user
+    await callback.message.answer(
+        f"🔑 Ваш новый ключ:\n\n<code>{key}</code>",
+        parse_mode="HTML"
+    )
+
+    await callback.answer()
+
 @router.callback_query(F.data.startswith("admin_wm_list:"))
 async def show_admin_webmasters(callback: CallbackQuery):
     admin_id = int(callback.data.split(":")[1])
@@ -271,7 +297,7 @@ async def cancel_admin_removal(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "webmaster_stats")
 async def webmaster_stats(callback: CallbackQuery):
     logging.info("[ADMIN PANEL] Получение статистики вебмастеров")
-    
+
     async with SessionLocal() as session:
         result = await session.execute(
             select(Referral).options(selectinload(Referral.links))

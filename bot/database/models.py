@@ -92,3 +92,12 @@ class UserProgress(Base):
     username = Column(String(50), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
+class AccessKey(Base):
+    __tablename__ = "access_keys"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    telegram_id = Column(BigInteger, index=True)
+    key = Column(String(64), unique=True, nullable=False, index=True)
+    entered = Column(Boolean, nullable=False, default=False)
+    username = Column(String(50))
+    created_at = Column(DateTime, server_default=func.now())
