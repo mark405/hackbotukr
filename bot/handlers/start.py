@@ -126,16 +126,16 @@ async def check_user_access_key(user_id: int, bot_message: Message) -> bool:
     Если ключа нет — добавляет пользователя в awaiting_keys и отправляет сообщение.
     Возвращает True, если ключ есть и пользователь может продолжать.
     """
-    # async with SessionLocal() as session:
-    #     result = await session.execute(
-    #         select(AccessKey).filter_by(telegram_id=user_id, entered=True)
-    #     )
-    #     access_key = result.scalar_one_or_none()
-    #
-    # if not access_key:
-    #     awaiting_keys[user_id] = True
-    #     await bot_message.answer("🔑 Введіть свій ключ доступу, щоб почати:")
-    #     return False
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(AccessKey).filter_by(telegram_id=user_id, entered=True)
+        )
+        access_key = result.scalar_one_or_none()
+
+    if not access_key:
+        awaiting_keys[user_id] = True
+        await bot_message.answer("🔑 Введіть свій ключ доступу, щоб почати:")
+        return False
 
     return True
 
