@@ -154,7 +154,11 @@ async def check_user_access_key(user_id: int, bot_message: Message) -> bool:
 
     if not access_key:
         awaiting_keys[user_id] = True
-        await bot_message.answer("Напишіть підтримці, щоб отримати ключ доступу:\n@supp_winbot\nВведіть свій ключ доступу, щоб почати:")
+        await bot_message.answer(
+            "🔑 Щоб отримати доступ, напишіть підтримці:\n"
+            "👤 @supp_winbot\n\n"
+            "Після отримання ключа введіть його тут, щоб почати роботу 🚀"
+        )
         return False
 
     return True
