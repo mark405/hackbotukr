@@ -268,7 +268,7 @@ async def get_instruction(callback: CallbackQuery):
 async def send_registration_link(callback: CallbackQuery):
     user_id = callback.from_user.id
 
-    if not await (user_id, callback.message):
+    if not await check_user_access_key(user_id, callback.message):
         return
     await callback.answer()
 
