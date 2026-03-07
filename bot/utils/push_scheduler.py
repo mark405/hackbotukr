@@ -30,7 +30,7 @@ async def push_loop(bot: Bot):
 
                 users_with_keys = result.scalars().all()
 
-            users = users_with_keys | ALLOWED_USER_IDS
+            users = set(users_with_keys) | set(ALLOWED_USER_IDS)
 
             for user_id in users:
                 try:
