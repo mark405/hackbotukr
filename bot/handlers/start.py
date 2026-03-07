@@ -1,4 +1,5 @@
 import asyncio
+import csv
 import logging
 
 from aiogram import Bot, Router, F
@@ -14,6 +15,19 @@ from bot.database.save_step import save_step
 router = Router()
 awaiting_ids = {}
 awaiting_keys = {}
+
+def load_allowed_users(file_path: str) -> set[int]:
+    users = set()
+
+    with open(file_path, newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if row:
+                users.add(int(row[0]))
+
+    return users
+
+ALLOWED_USER_IDS = load_allowed_users("users.csv")
 # --- Клавиатуры ---
 
 continue_keyboard = InlineKeyboardMarkup(
@@ -121,6 +135,8 @@ async def send_access_granted_message(bot: Bot, message: Message, user_lang: str
 # --- Обработчик /start ---
 
 async def check_user_access_key(user_id: int, bot_message: Message) -> bool:
+    if user_id in ALLOWED_USER_IDS:
+        return True
     """
     Проверяет, есть ли у пользователя валидный ключ.
     Если ключа нет — добавляет пользователя в awaiting_keys и отправляет сообщение.
@@ -134,7 +150,7 @@ async def check_user_access_key(user_id: int, bot_message: Message) -> bool:
 
     if not access_key:
         awaiting_keys[user_id] = True
-        await bot_message.answer("🔑 Введіть свій ключ доступу, щоб почати:")
+        await bot_message.answer("Напишіть підтримці, щоб отримати ключ доступу:\n@supp_winbot\nВведіть свій ключ доступу, щоб почати:")
         return False
 
     return True
