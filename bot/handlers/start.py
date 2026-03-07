@@ -1,6 +1,7 @@
 import asyncio
 import csv
 import logging
+import os
 
 from aiogram import Bot, Router, F
 from aiogram.filters import CommandStart
@@ -16,6 +17,9 @@ router = Router()
 awaiting_ids = {}
 awaiting_keys = {}
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # директория этого скрипта
+CSV_PATH = os.path.join(BASE_DIR, "users.csv")
+
 def load_allowed_users(file_path: str) -> set[int]:
     users = set()
 
@@ -27,7 +31,7 @@ def load_allowed_users(file_path: str) -> set[int]:
 
     return users
 
-ALLOWED_USER_IDS = load_allowed_users("users.csv")
+ALLOWED_USER_IDS = load_allowed_users(CSV_PATH)
 # --- Клавиатуры ---
 
 continue_keyboard = InlineKeyboardMarkup(
