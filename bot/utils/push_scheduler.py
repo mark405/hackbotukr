@@ -7,7 +7,7 @@ from sqlalchemy.future import select
 from bot.database.db import SessionLocal
 from bot.database.models import UserProgress, AccessKey
 from bot.utils.push_utils import PUSH_MESSAGES
-from bot.handlers.start import continue_keyboard
+from bot.handlers.start import continue_keyboard, ALLOWED_USER_IDS
 
 
 async def push_loop(bot: Bot):
@@ -28,7 +28,9 @@ async def push_loop(bot: Bot):
                     )
                 )
 
-                users = result.scalars().all()
+                users_with_keys = result.scalars().all()
+
+            users = users_with_keys | ALLOWED_USER_IDS
 
             for user_id in users:
                 try:
@@ -47,4 +49,4 @@ async def push_loop(bot: Bot):
                     logging.error(f"Push error for {user_id}: {e}")
 
         except Exception as e:
-            ogging.error(f"Push loop error: {e}")
+            logging.error(f"Push loop error: {e}")
