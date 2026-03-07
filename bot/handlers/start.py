@@ -90,7 +90,7 @@ games_keyboard = InlineKeyboardMarkup(
 async def send_start_text(bot: Bot, target, is_edit: bool = False):
     user_id = target.from_user.id
 
-    if not check_user_access_key(user_id, target):
+    if not await check_user_access_key(user_id, target):
         return
     text = (
         "👋 Вітаю!\n\n"
@@ -118,7 +118,7 @@ async def send_start_text(bot: Bot, target, is_edit: bool = False):
 async def send_access_granted_message(bot: Bot, message: Message, user_lang: str):
     user_id = message.from_user.id
 
-    if not check_user_access_key(user_id, message):
+    if not await check_user_access_key(user_id, message):
         return
     # user_lang оставляем как параметр, чтобы не ломать остальную логику
     keyboard = games_keyboard
