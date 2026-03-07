@@ -48,5 +48,7 @@ async def push_loop(bot: Bot):
                 except Exception as e:
                     logging.error(f"Push error for {user_id}: {e}")
 
+            logging.info(f"Pushed {len(users)} users")
+
         except Exception as e:
             logging.error(f"Push loop error: {e}")
