@@ -139,27 +139,27 @@ async def send_access_granted_message(bot: Bot, message: Message, user_lang: str
 # --- Обработчик /start ---
 
 async def check_user_access_key(user_id: int, bot_message: Message) -> bool:
-    if user_id in ALLOWED_USER_IDS:
-        return True
-    """
-    Проверяет, есть ли у пользователя валидный ключ.
-    Если ключа нет — добавляет пользователя в awaiting_keys и отправляет сообщение.
-    Возвращает True, если ключ есть и пользователь может продолжать.
-    """
-    async with SessionLocal() as session:
-        result = await session.execute(
-            select(AccessKey).filter_by(telegram_id=user_id, entered=True)
-        )
-        access_key = result.scalar_one_or_none()
-
-    if not access_key:
-        awaiting_keys[user_id] = True
-        await bot_message.answer(
-            "🔑 Щоб отримати доступ, напишіть підтримці:\n"
-            "👤 @supp_winbot\n\n"
-            "Після отримання ключа введіть його тут, щоб почати роботу 🚀"
-        )
-        return False
+    # if user_id in ALLOWED_USER_IDS:
+    #     return True
+    # """
+    # Проверяет, есть ли у пользователя валидный ключ.
+    # Если ключа нет — добавляет пользователя в awaiting_keys и отправляет сообщение.
+    # Возвращает True, если ключ есть и пользователь может продолжать.
+    # """
+    # async with SessionLocal() as session:
+    #     result = await session.execute(
+    #         select(AccessKey).filter_by(telegram_id=user_id, entered=True)
+    #     )
+    #     access_key = result.scalar_one_or_none()
+    #
+    # if not access_key:
+    #     awaiting_keys[user_id] = True
+    #     await bot_message.answer(
+    #         "🔑 Щоб отримати доступ, напишіть підтримці:\n"
+    #         "👤 @supp_winbot\n\n"
+    #         "Після отримання ключа введіть його тут, щоб почати роботу 🚀"
+    #     )
+    #     return False
 
     return True
 
