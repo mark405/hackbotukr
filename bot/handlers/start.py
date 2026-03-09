@@ -273,20 +273,20 @@ async def send_registration_link(callback: CallbackQuery):
     await callback.answer()
 
     async with SessionLocal() as session:
-        user_result = await session.execute(
-            select(User).filter_by(telegram_id=callback.from_user.id)
-        )
-        user = user_result.scalar()
+        # user_result = await session.execute(
+        #     select(User).filter_by(telegram_id=callback.from_user.id)
+        # )
+        # user = user_result.scalar()
 
         referral_link = REGISTRATION_URL  # fallback
-        if user and user.bot_tag:
-            invite_result = await session.execute(
-                select(ReferralInvite).filter_by(bot_tag=user.bot_tag)
-            )
-            invite = invite_result.scalar_one_or_none()
-            if invite:
-                referral_link = invite.casino_link
-        logging.info(f"Generated registration link for user {callback.from_user.id}: {referral_link}")
+        # if user and user.bot_tag:
+        #     invite_result = await session.execute(
+        #         select(ReferralInvite).filter_by(bot_tag=user.bot_tag)
+        #     )
+        #     invite = invite_result.scalar_one_or_none()
+        #     if invite:
+        #         referral_link = invite.casino_link
+        # logging.info(f"Generated registration link for user {callback.from_user.id}: {referral_link}")
         await callback.message.answer(f"Ось посилання для реєстрації: {referral_link}")
     username = callback.from_user.username or f"user_{callback.from_user.id}"
 
