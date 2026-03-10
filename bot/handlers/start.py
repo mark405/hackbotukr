@@ -65,19 +65,19 @@ reg_inline_keyboard = InlineKeyboardMarkup(
 
 games_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
-        # Лейбл Краш-игры
-        [InlineKeyboardButton(text="💥 Краш-игры 💥", callback_data="ignore")],
-        [InlineKeyboardButton(text="💎 MINES 💎", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/minesexplorer-ukr")),
-         InlineKeyboardButton(text="⚽ GOAL ⚽", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/goalrush-ukr"))],
-        [InlineKeyboardButton(text="✈️ AVIATRIX ✈️", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/aviatrixflymod-ukr")),
-         InlineKeyboardButton(text="🥅 PENALTY 🥅", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/penaltygame-ukr"))],
-
         # Лейбл Слот-игры
         [InlineKeyboardButton(text="🎰 Слот-игры 🎰", callback_data="ignore")],
         [InlineKeyboardButton(text="SWEET BONANZA", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/sweetbonanza-ukr")),
          InlineKeyboardButton(text="OLYMPUS", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/olympus-ukr"))],
         [InlineKeyboardButton(text="SUPREME HOT", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/supremehot-ukr")),
          InlineKeyboardButton(text="ROYAL COINS", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/royalcoins-ukr"))],
+
+        # Лейбл Краш-игры
+        [InlineKeyboardButton(text="💥 Краш-игры 💥", callback_data="ignore")],
+        [InlineKeyboardButton(text="💎 MINES 💎", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/minesexplorer-ukr")),
+         InlineKeyboardButton(text="⚽ GOAL ⚽", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/goalrush-ukr"))],
+        [InlineKeyboardButton(text="✈️ AVIATRIX ✈️", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/aviatrixflymod-ukr")),
+         InlineKeyboardButton(text="🥅 PENALTY 🥅", web_app=WebAppInfo(url=f"{WEBAPP_BASE_URL}/penaltygame-ukr"))],
 
         # Кнопка помощи
         [InlineKeyboardButton(text="🆘 Допомога", callback_data="help")]
