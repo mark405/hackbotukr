@@ -184,6 +184,49 @@ async def start_handler(message: Message):
             "👇 Тисни кнопку нижче:",
             reply_markup=how_it_works_keyboard
         )
+
+        parts = message.text.split(maxsplit=1)
+        if len(parts) > 1:
+            bot_tag = parts[1].strip()
+            async with SessionLocal() as session:
+                invite_result = await session.execute(
+                    select(ReferralInvite).filter_by(bot_tag=bot_tag)
+                )
+                invite = invite_result.scalar_one_or_none()
+
+                if invite:
+                    await session.refresh(invite)
+                    referral = await session.get(Referral, invite.referral_id)
+                    if referral:
+                        user_result = await session.execute(
+                            select(User).filter_by(telegram_id=message.from_user.id)
+                        )
+                        user = user_result.scalar()
+
+                        if not user:
+                            user = User(
+                                telegram_id=message.from_user.id,
+                                username=message.from_user.username,
+                                ref_tag=referral.tag,
+                                bot_tag=bot_tag
+                            )
+                        else:
+                            user.ref_tag = referral.tag
+                            user.bot_tag = bot_tag
+
+                        session.add(user)
+                        await session.commit()
+
+                        logging.info(
+                            f"👤 Новый пользователь {message.from_user.id} пришёл по ссылке: /start={bot_tag}. "
+                            f"Казино: {invite.casino_link}"
+                        )
+                    else:
+                        logging.warning(f"⚠️ Invite найден, но Referral не найден")
+                else:
+                    logging.warning(
+                        f"⚠️ Пользователь {message.from_user.id} пришёл с несуществующим bot_tag: {bot_tag}")
+
         username = message.from_user.username or f"user_{message.from_user.id}"
 
         async with SessionLocal() as session:
