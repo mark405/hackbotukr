@@ -44,6 +44,7 @@ class Referral(Base):
     admin = relationship("Admin", back_populates="referrals")
     links = relationship("ReferralLink", back_populates="referral", cascade="all, delete-orphan", lazy="selectin")
     invites = relationship("ReferralInvite", back_populates="referral", cascade="all, delete-orphan", lazy="selectin")
+    video = Column(String)
 
     def __repr__(self):
         return f"<Referral(id={self.id}, tag={self.tag}, admin_id={self.admin_id})>"

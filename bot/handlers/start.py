@@ -290,8 +290,28 @@ async def get_instruction(callback: CallbackQuery):
     )
 
     video_file_id = "BAACAgIAAxkBAAIW1mmZ70Pxs33ok-Hb7ottbnU1E_W-AAKqkAACV27RSHAEwXqQ2LrLOgQ"
-    await callback.message.answer_video(video=video_file_id)
+    async with SessionLocal() as session:
+        user_result = await session.execute(
+             select(User).filter_by(telegram_id=callback.from_user.id)
+         )
+        user = user_result.scalar()
 
+        if user and user.bot_tag:
+            invite_result = await session.execute(
+                select(ReferralInvite).filter_by(bot_tag=user.bot_tag)
+            )
+            invite = invite_result.scalar_one_or_none()
+            if invite:
+                referral_result  = await session.execute(
+                    select(Referral).filter_by(id=invite.referral_id)
+                )
+                referral = referral_result.scalar_one_or_none()
+
+                if referral and referral.video:
+                    video_file_id = referral.video
+
+
+    await callback.message.answer_video(video=video_file_id)
     await asyncio.sleep(15)
 
     await callback.message.answer(

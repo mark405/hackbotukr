@@ -7,7 +7,7 @@ from bot.database.models import Referral, ReferralInvite
 from bot.states.admin_states import AdminStates
 import re
 
-from bot.handlers.webmaster_links import show_links_for_webmaster
+from bot.handlers.webmaster_links import show_links_for_webmaster, show_links_for_webmaster_by_chat
 
 router = Router()
 
@@ -70,6 +70,10 @@ async def process_bot_casino_link(message: types.Message, state: FSMContext):
     bot_tag = data.get("bot_tag")
     casino_link = message.text.strip()
 
+    if not message.text:
+        await message.answer("❌ Пожалуйста, отправьте текстовую ссылку на казино.")
+        return
+
     if not is_valid_http_url(casino_link):
         await message.answer("❌ Некорректная ссылка. Начинается с http:// или https://")
         return
@@ -128,6 +132,51 @@ async def add_invite_to(callback: CallbackQuery, state: FSMContext):
     )
     await state.set_state(AdminStates.awaiting_casino_link)
     await callback.answer()
+
+@router.callback_query(F.data.startswith("add_video_to:"))
+async def add_video_to(callback: CallbackQuery, state: FSMContext):
+    referral_id = int(callback.data.split(":")[1])
+    async with SessionLocal() as session:
+        referral = await session.get(Referral, referral_id)
+        if not referral:
+            await callback.message.answer("❌ Вебмастер не найден.")
+            return await callback.answer()
+
+        existing = await session.execute(
+            select(ReferralInvite).where(ReferralInvite.referral_id == referral.id)
+        )
+        invites = existing.scalars().all()
+
+        # Автонумерация
+        number = len(invites) + 1
+        bot_tag = f"{referral.tag}_{str(number).zfill(2)}"
+
+    await state.update_data(referral_id=referral_id, bot_tag=bot_tag)
+    await callback.message.answer(
+        f"Сбросьте видео инструкцию в формате mp4/mov:",
+        parse_mode="HTML"
+    )
+    await state.set_state(AdminStates.awaiting_video)
+    await callback.answer()
+
+
+@router.message(AdminStates.awaiting_video)
+async def process_bot_video(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    referral_id = data.get("referral_id")
+    video_file_id = message.video.file_id
+
+    async with SessionLocal() as session:
+        referral = await session.get(Referral, referral_id)
+        if referral:
+            referral.video = video_file_id
+            await session.commit()
+
+    await message.answer("🎬 Видео успешно сохранено для вебмастера.")
+
+
+    await show_links_for_webmaster_by_chat(message.bot, message.chat.id, referral_id)
+    await state.clear()
 
 
 @router.callback_query(F.data.startswith("edit_invite:"))

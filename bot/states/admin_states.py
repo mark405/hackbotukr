@@ -16,4 +16,5 @@ class AdminStates(StatesGroup):
     # Добавлено для "бот + казино"
     awaiting_bot_tag = State()
     awaiting_casino_link = State()
+    awaiting_video = State()
     awaiting_edit_casino_link = State()

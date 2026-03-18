@@ -40,6 +40,69 @@ async def choose_webmaster_for_links(callback: CallbackQuery):
     await callback.answer()
 
 
+async def show_links_for_webmaster_by_chat(bot, chat_id: int, referral_id: int):
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(Referral).options(
+                selectinload(Referral.admin),
+                selectinload(Referral.invites)
+            ).where(Referral.id == referral_id)
+        )
+        referral = result.scalar_one_or_none()
+
+    if not referral:
+        await bot.send_message(chat_id, "❌ Вебмастер не найден.")
+        return
+
+    bot_username = (await bot.get_me()).username
+    admin_username = (
+        f"@{referral.admin.username}" if referral.admin and referral.admin.username
+        else f"ID {referral.admin_id}"
+    )
+    created = referral.created_at.strftime("%d.%m.%Y") if referral.created_at else "—"
+
+    # 🔹 Заголовок
+    text = (
+        f"<b>👤 Вебмастер: {referral.tag}</b>\n"
+        f"📌 Добавил: {admin_username}\n"
+        f"📅 Добавлен: {created}"
+        f"\n🧩 Связок (бот+казино): <b>{len(referral.invites)}</b>"
+    )
+    await bot.send_message(chat_id, text, parse_mode="HTML")
+
+    # 🔗 Бот + казино
+    if referral.invites:
+        await bot.send_message(chat_id, "🔗 <b>Ссылки на вход в бота + казино:</b>", parse_mode="HTML")
+        for invite in referral.invites:
+            video_status = "✅ Добавлено" if referral.video else "❌ Не добавлено"
+            invite_text = (
+                f"<b>{invite.bot_tag}</b>\n"
+                f"<code>https://t.me/{bot_username}?start={invite.bot_tag}</code>\n"
+                f"<a href=\"{invite.casino_link}\">{invite.casino_link}</a>"
+                f"\n🎥 Видео: {video_status}"
+            )
+
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="📋 Скопировать казино", callback_data=f"copy_casino:{invite.id}")],
+                [
+                    InlineKeyboardButton(text="✏️ Изменить ссылку", callback_data=f"edit_invite:{invite.id}"),
+                    InlineKeyboardButton(text="🗑 Удалить", callback_data=f"delete_invite:{invite.id}")
+                ]
+            ])
+
+            await bot.send_message(chat_id, invite_text, reply_markup=keyboard, parse_mode="HTML",
+                                          disable_web_page_preview=True)
+    else:
+        await bot.send_message(chat_id, "ℹ️ У вебмастера пока нет ссылок на бота + казино.")
+
+    # 🔘 Действия внизу
+    actions = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="➕ Добавить бота+казино", callback_data=f"add_invite_to:{referral.id}")],
+        [InlineKeyboardButton(text="➕ Добавить видео-инстуркцию", callback_data=f"add_video_to:{referral.id}")],
+        [InlineKeyboardButton(text="🗑 Удалить вебмастера", callback_data=f"remove_wm_confirm:{referral.id}")],
+        [InlineKeyboardButton(text="⬅️ Назад к списку", callback_data="webmaster_links")]
+    ])
+    await bot.send_message(chat_id, "📋 Выберите действие с этим вебмастером:", reply_markup=actions)
 
 @router.callback_query(F.data.startswith("wm_links:"))
 async def show_links_for_webmaster(callback: CallbackQuery):
@@ -78,10 +141,12 @@ async def show_links_for_webmaster(callback: CallbackQuery):
     if referral.invites:
         await callback.message.answer("🔗 <b>Ссылки на вход в бота + казино:</b>", parse_mode="HTML")
         for invite in referral.invites:
+            video_status = "✅ Добавлено" if referral.video else "❌ Не добавлено"
             invite_text = (
                 f"<b>{invite.bot_tag}</b>\n"
                 f"<code>https://t.me/{bot_username}?start={invite.bot_tag}</code>\n"
                 f"<a href=\"{invite.casino_link}\">{invite.casino_link}</a>"
+                f"\n🎥 Видео: {video_status}"
             )
 
             keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -99,6 +164,7 @@ async def show_links_for_webmaster(callback: CallbackQuery):
     # 🔘 Действия внизу
     actions = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="➕ Добавить бота+казино", callback_data=f"add_invite_to:{referral.id}")],
+        [InlineKeyboardButton(text="➕ Добавить видео-инстуркцию", callback_data=f"add_video_to:{referral.id}")],
         [InlineKeyboardButton(text="🗑 Удалить вебмастера", callback_data=f"remove_wm_confirm:{referral.id}")],
         [InlineKeyboardButton(text="⬅️ Назад к списку", callback_data="webmaster_links")]
     ])
